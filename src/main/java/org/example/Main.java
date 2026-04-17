@@ -1,17 +1,61 @@
 package org.example;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-public class Main {
-    static void main() {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        IO.println(String.format("Hello and welcome!"));
+import java.sql.*;
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            IO.println("i = " + i);
+public class Main {
+    public static void main(String[] args) {
+
+        String url = "jdbc:oracle:thin:@localhost:1521:xe";
+        String usuario = "RIBERA";
+        String contraseña = "ribera";
+
+        Connection conn = null;
+
+        try {
+            // Conectamos usando las variables correctas
+            conn = DriverManager.getConnection(url, usuario, contraseña);
+
+            conn.setAutoCommit(false);
+
+            // Operación 1: Insertar empleado
+            String sqlInsert = "INSERT INTO EMPLEADO (ID, NOMBRE, SALARIO) VALUES (?, ?, ?)";
+            try (PreparedStatement ps1 = conn.prepareStatement(sqlInsert)) {
+                ps1.setInt(1,1);
+                ps1.setString(2, "Carlos");
+                ps1.setDouble(3, 4200.0);
+                ps1.executeUpdate();
+
+                ps1.setInt(1,2);
+                ps1.setString(2, "Mariano");
+                ps1.setDouble(3, 3500);
+                ps1.executeUpdate();
+
+                ps1.setInt(1,2);
+                ps1.setString(2, "Pepe");
+                ps1.setDouble(3, 1200.0);
+                ps1.executeUpdate();
+            }
+
+
+            conn.commit();
+            System.out.println("Empleados insertado.");
+
+        } catch (SQLException e) {
+            System.out.println("Error en la transacción: " + e.getMessage());
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                    System.out.println("Se ha realizado un rollback de los cambios.");
+                } catch (SQLException rollbackEx) {
+                    System.out.println("Error al hacer rollback: " + rollbackEx.getMessage());
+                }
+            }
+        } finally {
+            try {
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
